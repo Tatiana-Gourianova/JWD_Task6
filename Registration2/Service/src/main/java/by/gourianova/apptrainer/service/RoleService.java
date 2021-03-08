@@ -1,0 +1,29 @@
+package by.gourianova.apptrainer.service;
+
+import by.gourianova.apptrainer.exception.ServiceException;
+import by.gourianova.apptrainer.dao.RoleDao;
+import by.gourianova.apptrainer.exception.DaoException;
+import by.gourianova.apptrainer.entity.Role;
+
+import java.util.ArrayList;
+
+
+public class RoleService {
+    private RoleDao roleDao = new RoleDao();
+
+    public ArrayList<Role> findAll() throws ServiceException {
+        try {
+            return roleDao.findAll();
+        } catch (DaoException e) {
+            throw new ServiceException("Transaction failed in findAll method", e);
+        }
+    }
+
+    public boolean createRole(Role role) throws ServiceException {
+        try {
+            return roleDao.createEntity(role);
+        } catch (DaoException e) {
+            throw new ServiceException("Transaction failed in createRole method", e);
+        }
+    }
+}

@@ -1,30 +1,25 @@
 package by.gourianova.binocularvision.dao.impl;
 
-import by.gourianova.binocularvision.bean.News;
+
 import by.gourianova.binocularvision.bean.RegistrationInfo;
 import by.gourianova.binocularvision.bean.User;
-import by.gourianova.binocularvision.dao.DAOException;
 import by.gourianova.binocularvision.dao.UserDAO2;
 import by.gourianova.binocularvision.db.ConnectionPool;
 import by.gourianova.binocularvision.db.ProxyConnection;
-import by.gourianova.binocularvision.exception.DaoException;
-import by.gourianova.binocularvision.util.MD5;
+import by.gourianova.binocularvision.util.myMD5;
+
+
 
 import java.math.BigDecimal;
-import java.security.NoSuchAlgorithmException;
 import java.sql.*;
-import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
-import java.util.List;
 
 import static org.apache.logging.log4j.core.util.Closer.close;
 
-
-//import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
+//import by.gourianova.binocularvision.dao.DAOException;
 
 public class SQLUserDAO implements UserDAO2 {
 	private final static String SQL_CREATE_USER = "INSERT INTO users (Login, Password, First_Name, Last_Name,  Balance, Create_time) VALUES (?, ?, ?, ?, ?,?);";
@@ -44,21 +39,55 @@ public class SQLUserDAO implements UserDAO2 {
 	private static final ConnectionPool connectionPool = ConnectionPool.getInstance();
 
 	static {
-		MYSQLDriverLoader.getInstance();
+		//MYSQLDriverLoader.getInstance();
 	}
 
+/*
+	try {
+			con = DriverManager.getConnection("jdbc:mysql://127.0.0.1/news_management?useSSL=false&serverTimezone=UTC",
+					"root", "123456");
 
+			st = con.createStatement();
+			rs = st.executeQuery("SELECT * FROM news");
+
+			news = new ArrayList<News>();
+			while(rs.next()) {
+				int id = rs.getInt("id");
+				String title = rs.getString("title");
+				String brief = rs.getString("brief");
+				News n = new News(id, title, brief);
+
+				news.add(n);
+
+			}
+		} catch (SQLException e) {
+			throw new DAOException(e);
+		} finally {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				throw new DAOException(e);
+			}
+		}
+ */
 	@Override
 	public boolean registration(RegistrationInfo regInfo) throws Exception {
-		ProxyConnection connection = null;
+		//Proxy
+		Connection connection = null;
 		PreparedStatement preparedStatement = null;
 
 		boolean isRegistered = false;
-		try {
+		try {	connection= DriverManager.getConnection("jdbc:mysql://127.0.0.1/apptrainer?useSSL=false&serverTimezone=UTC",
+				"root", "778899");
 			preparedStatement = connection.prepareStatement(SQL_CREATE_USER);
 			String login = regInfo.getEmail();
 			preparedStatement.setString(1, login);
 			String password = regInfo.getPassword();
+			//TODO: try to use standart MD5
+			System.out.println(password+"pass2");
+						password=new myMD5().md5Encode(password);
+			System.out.println(password+"pass3");
+
 			preparedStatement.setString(2, password);
 			String name = regInfo.getName();
 			preparedStatement.setString(3, name);
@@ -73,7 +102,7 @@ public class SQLUserDAO implements UserDAO2 {
 			isRegistered = true;
 		} catch (SQLException e) {
 			isRegistered = false;
-			throw new DAOException("Error in registration method", e);
+			throw new Exception("Error in registration method", e);
 		} finally {
 			close(preparedStatement);
 			if (connection != null) close(connection);
@@ -85,9 +114,12 @@ public class SQLUserDAO implements UserDAO2 {
 	@Override
 	public Collection<User> findAll() throws Exception {
 		ArrayList<User> usersList = new ArrayList<>();
-		ProxyConnection connection = null;
+		//Proxy
+		Connection connection = null;
 		PreparedStatement preparedStatement = null;
 		try {
+			connection= DriverManager.getConnection("jdbc:mysql://127.0.0.1/apptrainer?useSSL=false&serverTimezone=UTC",
+					"root", "778899");
 			connection = ConnectionPool.getInstance().getConnection();
 			preparedStatement = connection.prepareStatement(SQL_FIND_ALL_USER);
 			ResultSet resultSet = preparedStatement.executeQuery();
@@ -105,10 +137,10 @@ public class SQLUserDAO implements UserDAO2 {
 				//	usersList.add(buildUser(resultSet));
 			}
 		} catch (SQLException e) {
-			throw new DAOException("Error in findAll method", e);
+			throw new Exception("Error in findAll method", e);
 		} finally {
 			close(preparedStatement);
-			close(connection);
+			if (connection != null)  close(connection);
 		}
 		return usersList;
 	}
@@ -121,7 +153,8 @@ public class SQLUserDAO implements UserDAO2 {
 		ProxyConnection connection = null;
 		PreparedStatement preparedStatement = null;
 		User user=null;
-		password=new MD5().md5Encode(password);
+
+		password=new myMD5().md5Encode(password);
 		try {
 				connection = ConnectionPool.getInstance().getConnection();
 				preparedStatement = connection.prepareStatement(SQL_FIND_USER_BY_LOGIN_PASSWORD);
@@ -151,6 +184,11 @@ public class SQLUserDAO implements UserDAO2 {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	//TODO: close connection!!!!
+		//} finally {
+	//	close(preparedStatement);
+	//	if (connection != null)  close(connection);
+	//}
 		System.out.println("USER AUTHORIZATION");
 		return user;
 	}

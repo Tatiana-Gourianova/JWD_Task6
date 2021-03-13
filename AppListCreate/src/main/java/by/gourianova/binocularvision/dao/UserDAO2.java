@@ -11,7 +11,7 @@ import java.util.Collection;
 public interface UserDAO2 {
 
 
-    User authorization(String login, String password) throws DAOException;
+    User authorization(String login, String password) throws DAOException, by.gourianova.binocularvision.dao.impl.DAOException;
 
     boolean registration(RegistrationInfo regInfo) throws Exception;
 

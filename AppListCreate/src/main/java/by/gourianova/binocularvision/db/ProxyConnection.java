@@ -13,6 +13,8 @@ public class ProxyConnection implements Connection {
         this.connection = connection;
     }
 
+
+
     @Override
     public void close() throws SQLException {
         ConnectionPool.getInstance().releaseConnection(this);
@@ -29,7 +31,8 @@ public class ProxyConnection implements Connection {
 
     @Override
     public PreparedStatement prepareStatement(String sql) throws SQLException {
-        return connection.prepareStatement(sql);
+            return connection.prepareStatement(sql);
+
     }
 
     @Override
